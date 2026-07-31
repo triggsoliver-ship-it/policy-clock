@@ -371,7 +371,11 @@ const server = http.createServer(async (req, res) => {
         method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ mode: 'subscription', 'line_items[0][price]': price, 'line_items[0][quantity]': '1',
           success_url: `${base}/?subscribed=1`, cancel_url: `${base}/#pricing`,
-          'subscription_data[trial_period_days]': '30' }),
+          'subscription_data[trial_period_days]': '30',
+          // UK-only product: show the price we advertise, in pounds. Without this
+          // Stripe's Adaptive Pricing converts to the visitor's local currency and
+          // a UK school sees US dollars. See lib/checkout-note.md.
+          'adaptive_pricing[enabled]': 'false' }),
       });
       const sess = await r.json();
       if (!r.ok) return send(res, 502, shell('Stripe error', `<section><div class="wrap"><h2>Stripe rejected that</h2><pre>${esc(JSON.stringify(sess.error || sess, null, 2))}</pre></div></section>`));
