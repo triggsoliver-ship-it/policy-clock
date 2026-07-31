@@ -358,10 +358,14 @@ const server = http.createServer(async (req, res) => {
       }
       const price = process.env[`STRIPE_PRICE_${tier.id.toUpperCase()}`];
       if (!price) return send(res, 500, shell('Missing price', `<section><div class="wrap"><h2>Missing price ID</h2><p>Set <code>STRIPE_PRICE_${esc(tier.id.toUpperCase())}</code>.</p></div></section>`));
+      // Build return URLs from the actual request host so this works wherever it is
+      // deployed (localhost, onrender.com, custom domain) without configuration.
+      const proto = (req.headers['x-forwarded-proto'] || 'http').split(',')[0];
+      const base = `${proto}://${req.headers.host}`;
       const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ mode: 'subscription', 'line_items[0][price]': price, 'line_items[0][quantity]': '1',
-          success_url: `http://localhost:${PORT}/?subscribed=1`, cancel_url: `http://localhost:${PORT}/#pricing`,
+          success_url: `${base}/?subscribed=1`, cancel_url: `${base}/#pricing`,
           'subscription_data[trial_period_days]': '30' }),
       });
       const sess = await r.json();
