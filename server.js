@@ -10,7 +10,8 @@
  *   POST /app/:slug/record record a publication date
  *   GET  /app/:slug/pack   plain-text governors' evidence pack
  *   GET  /api/:slug        JSON report
- *   POST /checkout         Stripe Checkout (test mode) — placeholder keys only
+ *   POST /checkout         Stripe Checkout
+ *   GET  /terms /privacy   legal pages
  *   GET  /health
  */
 const http = require('http');
@@ -19,6 +20,7 @@ const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 const { evaluate, governorsSummary } = require('./lib/engine');
 const { REQUIREMENTS, applicable } = require('./lib/requirements');
+const { TERMS, PRIVACY } = require('./lib/legal');
 
 const PORT = process.env.PORT || 3000;
 const DATA = path.join(__dirname, 'data');
@@ -166,7 +168,8 @@ const shell = (title, body, desc = '') => `<!doctype html>
 </div></header>
 <main id="main">${body}</main>
 <footer><div class="wrap"><p><strong>Policy Clock</strong> — statutory publishing deadlines for English schools, with the source next to every one.</p>
-<p class="note">A compliance tracking tool, not legal advice. Requirements are re-derived from current DfE guidance and legislation; DfE's own consolidated policy list was withdrawn on 7 March 2024.</p></div></footer></body></html>`;
+<p class="note">A compliance tracking tool, not legal advice. Requirements are re-derived from current DfE guidance and legislation; DfE's own consolidated policy list was withdrawn on 7 March 2024.</p>
+<p class="note"><a href="/terms">Terms of service</a> · <a href="/privacy">Privacy notice</a> · Contact: oli@parishinabox.co.uk</p></div></footer></body></html>`;
 
 // ---------------------------------------------------------------- landing
 function landing(msg) {
@@ -204,7 +207,7 @@ function landing(msg) {
   <h2>Pricing</h2>
   <p class="lede">Less than an hour of a business manager's time each month.</p>
   <div class="price-grid">${tiers}</div>
-  <p class="note" style="margin-top:24px">Prices exclude VAT. Card handling by Stripe; this build runs in Stripe test mode.</p>
+  <p class="note" style="margin-top:24px">Prices exclude VAT. Card handling by Stripe.</p>
 </div></section>
 
 <section id="waitlist"><div class="wrap">
@@ -293,6 +296,8 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/health') {
       return json(res, 200, { ok: true, storage: { persistent: DB_PERSISTENT, location: DB_LOCATION }, schools: SEED.length, requirements: REQUIREMENTS.length });
     }
+    if (req.method === 'GET' && url.pathname === '/terms') return send(res, 200, shell('Policy Clock — terms of service', TERMS));
+    if (req.method === 'GET' && url.pathname === '/privacy') return send(res, 200, shell('Policy Clock — privacy notice', PRIVACY));
     if (req.method === 'GET' && url.pathname === '/app') return send(res, 200, picker());
 
     if (req.method === 'GET' && parts[0] === 'app' && parts[1] && !parts[2]) {
@@ -347,10 +352,10 @@ const server = http.createServer(async (req, res) => {
       const tier = PRICING.find(t => t.id === f.tier);
       if (!tier) return send(res, 400, shell('Unknown plan', '<section><div class="wrap"><h2>Unknown plan</h2><p><a href="/#pricing">Back</a></p></div></section>'));
       const key = process.env.STRIPE_SECRET_KEY || '';
-      if (!key.startsWith('sk_test_')) {
-        return send(res, 200, shell('Stripe test mode not configured', `<section><div class="wrap">
+      if (!/^sk_(test|live)_/.test(key)) {
+        return send(res, 200, shell('Stripe not configured', `<section><div class="wrap">
           <h2>Checkout is wired up, but not keyed</h2>
-          <div class="banner warn">No <code>STRIPE_SECRET_KEY</code> beginning <code>sk_test_</code> is set, so nothing was sent to Stripe.</div>
+          <div class="banner warn">No <code>STRIPE_SECRET_KEY</code> beginning <code>sk_test_</code> or <code>sk_live_</code> is set, so nothing was sent to Stripe.</div>
           <p>Selected plan: <strong>${esc(tier.name)} — £${tier.price}/month</strong>.</p>
           <p><code style="font-family:var(--mono);font-size:.88rem">STRIPE_SECRET_KEY=sk_test_... STRIPE_PRICE_${esc(tier.id.toUpperCase())}=price_... node server.js</code></p>
           <p>See <strong>SETUP.md</strong>. Never commit a live key.</p>
