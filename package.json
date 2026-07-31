@@ -1,0 +1,8 @@
+{
+  "name": "policy-clock",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Statutory publishing deadlines for English schools, with the legal source cited on every item.",
+  "engines": { "node": ">=22.5" },
+  "scripts": { "start": "node server.js" }
+}

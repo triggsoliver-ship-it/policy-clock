@@ -1,0 +1,7 @@
+node_modules/
+data/clock.db
+data/clock.db-journal
+data/waitlist.jsonl
+data/reports/
+*.db
+.DS_Store

@@ -1,0 +1,13 @@
+# Render blueprint — connect this repo at https://dashboard.render.com and Render
+# reads this file to create the service. Free tier: spins down when idle, disk is
+# ephemeral (sign-ups persist in the log stream via the [signup] lines).
+services:
+  - type: web
+    name: policy-clock
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: CLOCK_DB
+        value: /tmp/clock.db
