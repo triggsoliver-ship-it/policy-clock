@@ -10,8 +10,7 @@
  *   POST /app/:slug/record record a publication date
  *   GET  /app/:slug/pack   plain-text governors' evidence pack
  *   GET  /api/:slug        JSON report
- *   POST /checkout         Stripe Checkout
- *   GET  /terms /privacy   legal pages
+ *   POST /checkout         Stripe Checkout (test mode) — placeholder keys only
  *   GET  /health
  */
 const http = require('http');
@@ -169,7 +168,8 @@ const shell = (title, body, desc = '') => `<!doctype html>
 <main id="main">${body}</main>
 <footer><div class="wrap"><p><strong>Policy Clock</strong> — statutory publishing deadlines for English schools, with the source next to every one.</p>
 <p class="note">A compliance tracking tool, not legal advice. Requirements are re-derived from current DfE guidance and legislation; DfE's own consolidated policy list was withdrawn on 7 March 2024.</p>
-<p class="note"><a href="/terms">Terms of service</a> · <a href="/privacy">Privacy notice</a> · Contact: oli@parishinabox.co.uk</p></div></footer></body></html>`;
+<p class="note"><a href="/terms">Terms of service</a> · <a href="/privacy">Privacy notice</a> · Contact: oli@parishinabox.co.uk</p>
+<p class="note">Policy Clock is a trading name of Keelson Holdings Ltd, registered in England and Wales, company number 17359226. Registered office: 71-75 Shelton Street, Covent Garden, London WC2H 9JQ.</p></div></footer></body></html>`;
 
 // ---------------------------------------------------------------- landing
 function landing(msg) {
@@ -293,9 +293,7 @@ const server = http.createServer(async (req, res) => {
   const parts = url.pathname.split('/').filter(Boolean);
   try {
     if (req.method === 'GET' && url.pathname === '/') return send(res, 200, landing(q.subscribed ? 'Thanks — we will send your free check shortly.' : null));
-    if (req.method === 'GET' && url.pathname === '/health') {
-      return json(res, 200, { ok: true, storage: { persistent: DB_PERSISTENT, location: DB_LOCATION }, schools: SEED.length, requirements: REQUIREMENTS.length });
-    }
+    if (req.method === 'GET' && url.pathname === '/health') return json(res, 200, { ok: true, storage: { persistent: DB_PERSISTENT, location: DB_LOCATION }, schools: SEED.length, requirements: REQUIREMENTS.length });
     if (req.method === 'GET' && url.pathname === '/terms') return send(res, 200, shell('Policy Clock — terms of service', TERMS));
     if (req.method === 'GET' && url.pathname === '/privacy') return send(res, 200, shell('Policy Clock — privacy notice', PRIVACY));
     if (req.method === 'GET' && url.pathname === '/app') return send(res, 200, picker());
@@ -373,8 +371,8 @@ const server = http.createServer(async (req, res) => {
           success_url: `${base}/?subscribed=1`, cancel_url: `${base}/#pricing`,
           'subscription_data[trial_period_days]': '30',
           // UK-only product: show the price we advertise, in pounds. Without this
-          // Stripe's Adaptive Pricing converts to the visitor's local currency and
-          // a UK school sees US dollars. See lib/checkout-note.md.
+          // Stripe's Adaptive Pricing converts to the visitor's local currency
+          // and a UK school sees US dollars. See lib/checkout-note.md.
           'adaptive_pricing[enabled]': 'false' }),
       });
       const sess = await r.json();
