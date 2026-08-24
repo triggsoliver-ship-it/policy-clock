@@ -61,11 +61,11 @@ const school = slug => SEED.find(s => s.slug === slug);
 
 const PRICING = [
   { id: 'school', name: 'Single school', price: 39, blurb: 'One school, one clock.',
-    features: ['Every statutory publishing deadline tracked', 'Email reminders 45 days out', 'Governors\' evidence pack', 'Source citation on every item'] },
+    features: ['Every statutory publishing deadline tracked', 'Governors\' evidence pack', 'Source citation on every item', 'Email reminders 45 days out (coming soon)'] },
   { id: 'federation', name: 'Federation', price: 149, featured: true, blurb: 'Up to five schools.',
-    features: ['Everything in Single school', 'Up to 5 schools', 'Cross-school dashboard', 'Consolidated board report'] },
+    features: ['Everything in Single school', 'Up to 5 schools', 'Cross-school dashboard (coming soon)', 'Consolidated board report (coming soon)'] },
   { id: 'trust', name: 'Trust', price: 399, blurb: 'Six schools or more.',
-    features: ['Everything in Federation', 'Unlimited schools', 'Trust-level exception report', 'CSV export and API', 'Priority support'] },
+    features: ['Everything in Federation', 'Unlimited schools', 'JSON API today; CSV export coming soon', 'Trust-level exception report (coming soon)', 'Priority support'] },
 ];
 
 // ---------------------------------------------------------------- helpers
@@ -196,7 +196,7 @@ function landing(msg) {
     <div class="card"><span class="num">01</span><h3>One register, rebuilt from source</h3>
       <p>Every requirement traced to legislation or current DfE guidance, with the citation shown beside it. Where a rule comes from withdrawn guidance, we say so rather than quietly passing it off as law.</p></div>
     <div class="card"><span class="num">02</span><h3>Deadlines counted, not listed</h3>
-      <p>Fixed dates, annual reviews and three and four year cycles all tracked together, with reminders 45 days out — in time to reach a governors' meeting.</p></div>
+      <p>Fixed dates, annual reviews and three and four year cycles all tracked together, counted down day by day. Email reminders 45 days out — in time to reach a governors' meeting — are coming soon.</p></div>
     <div class="card"><span class="num">03</span><h3>Evidence, ready for the board</h3>
       <p>One click produces a dated summary showing what is published, what is late and what is coming, with sources. It is what you hand the governors, or Ofsted.</p></div>
   </div>
