@@ -10,12 +10,15 @@
  *   POST /app/:slug/record record a publication date
  *   GET  /app/:slug/pack   plain-text governors' evidence pack
  *   GET  /api/:slug        JSON report
- *   POST /checkout         Stripe Checkout (test mode) — placeholder keys only
+ *   POST /checkout         Stripe Checkout (live or test, per STRIPE_SECRET_KEY)
+ *   GET  /welcome          post-payment page: what happens next
+ *   POST /stripe/webhook   signed Stripe events -> data/customers.jsonl + [paid] log
  *   GET  /health
  */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { evaluate, governorsSummary } = require('./lib/engine');
 const { REQUIREMENTS, applicable } = require('./lib/requirements');
@@ -84,6 +87,17 @@ function readBody(req) {
 const parseForm = b => Object.fromEntries(new URLSearchParams(b));
 const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || ''));
 const validDate = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d || '')) && !isNaN(Date.parse(d));
+
+// Stripe signs webhooks as `t=<unix>,v1=<hex>` over `<t>.<raw body>`. Verified here by
+// hand rather than pulling in the Stripe SDK, because this repo has no dependencies.
+function verifyStripeSignature(raw, header, secret, toleranceSeconds = 300) {
+  const parts = Object.fromEntries(String(header || '').split(',').map(p => p.split('=', 2)));
+  if (!parts.t || !parts.v1) return false;
+  if (Math.abs(Date.now() / 1000 - Number(parts.t)) > toleranceSeconds) return false;
+  const expected = crypto.createHmac('sha256', secret).update(`${parts.t}.${raw}`, 'utf8').digest('hex');
+  const a = Buffer.from(expected, 'utf8'), b = Buffer.from(parts.v1, 'utf8');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 
 const CSS = `
 :root{--ink:#101c17;--ink-2:#41544c;--line:#dfe6e2;--bg:#fff;--bg-2:#f5f9f7;
@@ -207,7 +221,8 @@ function landing(msg) {
   <h2>Pricing</h2>
   <p class="lede">Less than an hour of a business manager's time each month.</p>
   <div class="price-grid">${tiers}</div>
-  <p class="note" style="margin-top:24px">Prices exclude VAT. Card handling by Stripe.</p>
+  <p class="note" style="margin-top:24px">The price shown is the total payable. Keelson Holdings Ltd is not VAT registered, so no VAT is added and we cannot issue a VAT invoice. Billed monthly in pounds sterling; card handling by Stripe.</p>
+  <p class="note">There is no self-service setup yet: when you subscribe we add your school to Policy Clock by hand and email you the link, normally within one working day.</p>
 </div></section>
 
 <section id="waitlist"><div class="wrap">
@@ -368,16 +383,64 @@ const server = http.createServer(async (req, res) => {
       const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ mode: 'subscription', 'line_items[0][price]': price, 'line_items[0][quantity]': '1',
-          success_url: `${base}/?subscribed=1`, cancel_url: `${base}/#pricing`,
+          success_url: `${base}/welcome?session_id={CHECKOUT_SESSION_ID}`, cancel_url: `${base}/#pricing`,
           'subscription_data[trial_period_days]': '30',
-          // UK-only product: show the price we advertise, in pounds. Without this
-          // Stripe's Adaptive Pricing converts to the visitor's local currency
-          // and a UK school sees US dollars. See lib/checkout-note.md.
+          'subscription_data[metadata][tier]': tier.id,
+          // UK-only product: show the price we advertise, in pounds. Without these
+          // two, Stripe's Adaptive Pricing converts to the visitor's local currency
+          // and a UK school sees US dollars — and Managed Payments has to be switched
+          // off in the same call or Stripe rejects the session outright.
+          // See lib/checkout-note.md.
+          'managed_payments[enabled]': 'false',
           'adaptive_pricing[enabled]': 'false' }),
       });
       const sess = await r.json();
       if (!r.ok) return send(res, 502, shell('Stripe error', `<section><div class="wrap"><h2>Stripe rejected that</h2><pre>${esc(JSON.stringify(sess.error || sess, null, 2))}</pre></div></section>`));
       res.writeHead(303, { Location: sess.url }); return res.end();
+    }
+
+    if (req.method === 'GET' && url.pathname === '/welcome') {
+      return send(res, 200, shell('Policy Clock — thank you', `<section style="padding:52px 0"><div class="wrap" style="max-width:760px">
+        <h2>Thank you — your subscription is set up</h2>
+        <div class="banner ok" role="status">Stripe has your card. Your 30 day trial has started; nothing is charged until it ends.</div>
+        <p><strong>What happens next.</strong> Policy Clock does not have self-service school setup yet, so we add your school by hand. Reply to your Stripe receipt, or email
+        <a href="mailto:oli@parishinabox.co.uk">oli@parishinabox.co.uk</a>, with your school or trust name and website, and we will send your dashboard link — normally within one working day.</p>
+        <p>Meanwhile the <a href="/app">demo profiles</a> show exactly what you will get.</p>
+        <p class="note">Cancel any time before the trial ends and you will not be charged. Billing questions: oli@parishinabox.co.uk.</p>
+        <p><a class="btn ghost" href="/">Back to the start</a></p></div></section>`));
+    }
+
+    // Stripe webhook. Verifies the signature itself so that a paid subscription lands
+    // somewhere durable instead of only in Stripe's dashboard. Provisioning is still
+    // manual — this records the sale and shouts about it in the log stream.
+    if (req.method === 'POST' && url.pathname === '/stripe/webhook') {
+      const secret = process.env.STRIPE_WEBHOOK_SECRET || '';
+      const raw = await readBody(req);
+      if (!/^whsec_/.test(secret)) {
+        console.error('[webhook] STRIPE_WEBHOOK_SECRET is not set — event received and NOT recorded.');
+        return json(res, 503, { error: 'webhook secret not configured' });
+      }
+      if (!verifyStripeSignature(raw, req.headers['stripe-signature'], secret)) {
+        console.error('[webhook] bad signature — ignored.');
+        return json(res, 400, { error: 'bad signature' });
+      }
+      let event;
+      try { event = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
+      if (['checkout.session.completed', 'invoice.paid', 'customer.subscription.deleted'].includes(event.type)) {
+        const o = (event.data && event.data.object) || {};
+        const record = { at: new Date().toISOString(), event: event.type, id: o.id || null,
+          customer: o.customer || null, subscription: o.subscription || null,
+          email: (o.customer_details && o.customer_details.email) || o.customer_email || null,
+          tier: (o.metadata && o.metadata.tier) || null,
+          amount: o.amount_total != null ? o.amount_total : (o.amount_paid != null ? o.amount_paid : null),
+          currency: o.currency || null };
+        try { fs.appendFileSync(path.join(DATA, 'customers.jsonl'), JSON.stringify(record) + '\n'); }
+        catch (e) { console.error('[webhook] could not append to customers.jsonl:', e.message); }
+        // Render's disk is ephemeral; the log stream is the durable copy.
+        console.log('[paid]', JSON.stringify(record));
+        if (event.type === 'checkout.session.completed') console.log('[action-required] add this school by hand and email them the dashboard link.');
+      }
+      return json(res, 200, { received: true });
     }
 
     return send(res, 404, shell('Not found', '<section><div class="wrap"><h2>Not found</h2><p><a href="/">Back to the start</a></p></div></section>'));
