@@ -11,3 +11,17 @@ services:
     envVars:
       - key: CLOCK_DB
         value: /tmp/clock.db
+      # Secrets — set these in the Render dashboard, never in this file.
+      # sync: false means Render prompts for a value and keeps it out of git.
+      # Checkout returns 502 / "not keyed" until STRIPE_SECRET_KEY and all three
+      # price IDs are present; the webhook refuses events until the secret is set.
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_SCHOOL
+        sync: false
+      - key: STRIPE_PRICE_FEDERATION
+        sync: false
+      - key: STRIPE_PRICE_TRUST
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

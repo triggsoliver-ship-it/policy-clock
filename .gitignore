@@ -5,3 +5,4 @@ data/waitlist.jsonl
 data/reports/
 *.db
 .DS_Store
+data/customers.jsonl
