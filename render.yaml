@@ -1,6 +1,29 @@
 # Render blueprint — connect this repo at https://dashboard.render.com and Render
-# reads this file to create the service. Free tier: spins down when idle, disk is
-# ephemeral (sign-ups persist in the log stream via the [signup] lines).
+# reads this file to create the service.
+#
+# READ THIS BEFORE SELLING. Since 2 September 2026 customers set themselves up: the
+# webhook creates their account in the SQLite database at CLOCK_DB, and they choose
+# a password and add their schools there. On the free plan that database is at
+# /tmp, which Render wipes on every deploy and every spin-down after idle — so every
+# customer account, school and recorded date created since the last restart is
+# lost with it. The demo schools are unaffected (they are in git), and the [paid]
+# log lines still let Oli reconstruct who paid, but a customer who set a password
+# on Monday would find it gone on Tuesday.
+#
+# To fix: move to a paid instance, add a persistent disk, and point CLOCK_DB at it:
+#
+#     plan: starter
+#     disk:
+#       name: clock-data
+#       mountPath: /var/data
+#       sizeGB: 1
+#     envVars:
+#       - key: CLOCK_DB
+#         value: /var/data/clock.db
+#
+# Not changed here because it costs money and that is Oli's call, not a commit's.
+# The server logs a boxed warning at boot and /health reports storage.ephemeral
+# while this is still the case.
 services:
   - type: web
     name: policy-clock
@@ -11,10 +34,17 @@ services:
     envVars:
       - key: CLOCK_DB
         value: /tmp/clock.db
+      # Signs CSRF tokens. Generated once by Render and kept out of git. Without it
+      # the server makes one up at boot, which only means forms already open across
+      # a restart need a reload — but set it is better than not.
+      - key: SESSION_SECRET
+        generateValue: true
       # Secrets — set these in the Render dashboard, never in this file.
       # sync: false means Render prompts for a value and keeps it out of git.
       # Checkout returns 502 / "not keyed" until STRIPE_SECRET_KEY and all three
       # price IDs are present; the webhook refuses events until the secret is set.
+      # /welcome also uses STRIPE_SECRET_KEY to confirm a session and provision
+      # from it if the webhook has not landed yet.
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PRICE_SCHOOL
