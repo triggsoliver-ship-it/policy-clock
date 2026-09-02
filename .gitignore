@@ -4,5 +4,7 @@ data/clock.db-journal
 data/waitlist.jsonl
 data/reports/
 *.db
+*.db-wal
+*.db-shm
 .DS_Store
 data/customers.jsonl
