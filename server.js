@@ -100,7 +100,13 @@ async function stripeGet(p) {
   if (!/^sk_(test|live)_/.test(key)) throw new Error('STRIPE_SECRET_KEY is not set');
   const r = await fetch(`https://api.stripe.com${p}`, { headers: { Authorization: `Bearer ${key}` } });
   const body = await r.json();
-  if (!r.ok) throw new Error((body.error && body.error.message) || `Stripe returned ${r.status}`);
+  if (!r.ok) {
+    // The status travels with the error so a caller can tell "Stripe says no such
+    // object" (404, definitive) from "Stripe is down" (5xx, inconclusive).
+    const err = new Error((body.error && body.error.message) || `Stripe returned ${r.status}`);
+    err.status = r.status;
+    throw err;
+  }
   return body;
 }
 
@@ -717,12 +723,15 @@ const server = http.createServer(async (req, res) => {
         // that is the 'unknown' state below.
         // `paid` is three-valued: true, false, or null for "could not ask". A Stripe
         // outage or a missing key is "cannot confirm", never "not paid", and gets
-        // the calm pending page rather than "we could not find that order".
+        // the calm pending page rather than "we could not find that order". A 404
+        // from Stripe is different: that is Stripe saying no such session exists,
+        // which is as definitive as an answer gets, so it is "not paid".
         let paid = null, sess = null;
         try {
           sess = await stripeGet(`/v1/checkout/sessions/${encodeURIComponent(sessionId)}`);
           paid = sess.status === 'complete' || sess.payment_status === 'paid' || sess.payment_status === 'no_payment_required';
         } catch (err) {
+          if (err.status === 404) paid = false;
           console.error('[welcome] could not retrieve the Checkout Session:', err.message);
         }
         if (paid) {
