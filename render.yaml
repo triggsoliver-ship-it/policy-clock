@@ -1,39 +1,43 @@
 # Render blueprint — connect this repo at https://dashboard.render.com and Render
 # reads this file to create the service.
 #
-# READ THIS BEFORE SELLING. Since 2 September 2026 customers set themselves up: the
-# webhook creates their account in the SQLite database at CLOCK_DB, and they choose
-# a password and add their schools there. On the free plan that database is at
-# /tmp, which Render wipes on every deploy and every spin-down after idle — so every
-# customer account, school and recorded date created since the last restart is
-# lost with it. The demo schools are unaffected (they are in git), and the [paid]
-# log lines still let Oli reconstruct who paid, but a customer who set a password
-# on Monday would find it gone on Tuesday.
+# STORAGE FIX (2026-09-03): this blueprint now specifies the "starter" plan with a
+# persistent disk mounted at /var/data, and CLOCK_DB points there instead of /tmp.
+# On the FREE plan, /tmp is wiped on every deploy and every spin-down after idle —
+# so every customer account, school and recorded date created since the last
+# restart was lost with it. The demo schools are unaffected (they are in git), and
+# the [paid] log lines still let Oli reconstruct who paid, but a customer who set a
+# password on Monday would find it gone on Tuesday.
 #
-# To fix: move to a paid instance, add a persistent disk, and point CLOCK_DB at it:
-#
-#     plan: starter
-#     disk:
-#       name: clock-data
-#       mountPath: /var/data
-#       sizeGB: 1
-#     envVars:
-#       - key: CLOCK_DB
-#         value: /var/data/clock.db
-#
-# Not changed here because it costs money and that is Oli's call, not a commit's.
+# THIS FILE ALONE DOES NOT FIX ANYTHING YET. Render does not auto-upgrade an
+# existing service's plan or attach a disk just because render.yaml changed —
+# that needs a manual step on the Render dashboard for THIS existing service:
+#   1. Open the policy-clock service on dashboard.render.com.
+#   2. Settings → Instance Type → change from Free to Starter (paid, ~£6-7/month).
+#   3. Add a disk: name "clock-data", mount path "/var/data", size 1GB.
+#   4. Update the CLOCK_DB env var to /var/data/clock.db (should sync from this
+#      file once the blueprint is re-applied, but check it manually).
+#   5. Redeploy, then confirm /health reports storage.ephemeral: false and
+#      storage.location: /var/data/clock.db.
+# That upgrade costs real money every month, so it's Oli's call to click "confirm"
+# on the Render dashboard — not something this file or a commit does on its own.
 # The server logs a boxed warning at boot and /health reports storage.ephemeral
-# while this is still the case.
+# while the service is still actually on the free plan, regardless of what this
+# file says — trust /health's live report over this file's intent.
 services:
   - type: web
     name: policy-clock
     runtime: node
-    plan: free
+    plan: starter
+    disk:
+      name: clock-data
+      mountPath: /var/data
+      sizeGB: 1
     buildCommand: ""
     startCommand: node server.js
     envVars:
       - key: CLOCK_DB
-        value: /tmp/clock.db
+        value: /var/data/clock.db
       # Signs CSRF tokens. Generated once by Render and kept out of git. Without it
       # the server makes one up at boot, which only means forms already open across
       # a restart need a reload — but set it is better than not.
