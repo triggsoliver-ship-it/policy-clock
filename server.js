@@ -39,6 +39,10 @@ const PORT = process.env.PORT || 3000;
 const SESSION_HOURS = Number(process.env.SESSION_HOURS || 24);
 const MIN_PASSWORD_LENGTH = 12;   // matches lib/setpassword.js
 const SUPPORT = 'oli@parishinabox.co.uk';
+// Canonical origin for <link rel="canonical">, robots.txt and sitemap.xml. The site is
+// only ever served from this Render domain, so it is safe to hard-code rather than derive
+// from the request Host header (which a crawler or bot can spoof).
+const BASE_URL = 'https://policy-clock.onrender.com';
 
 // ---------------------------------------------------------------- schools
 // Two kinds. The demo schools come from data/schools.json and are public: they are the
@@ -289,7 +293,7 @@ code{font-family:var(--mono);font-size:.9em}
  */
 const shell = (title, body, desc = '', ctx = {}) => `<!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">${ctx.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style></head>
+<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">${ctx.canonical ? `<link rel="canonical" href="${BASE_URL}${ctx.canonical}">` : ''}${ctx.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style></head>
 <body><a href="#main" class="skip">Skip to main content</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="/">Policy<span>Clock</span></a>
@@ -364,7 +368,7 @@ function landing(msg) {
   </form>
   <p class="note" style="margin-top:14px">We use your address to send the check and occasional product updates. Unsubscribe any time.</p>
 </div></section>`,
-    'Track every statutory publishing deadline for English schools, with the legal source cited next to each one.');
+    'Track every statutory publishing deadline for English schools, with the legal source cited next to each one.', { canonical: '/' });
 }
 
 // ---------------------------------------------------------------- onboarding pages
@@ -513,7 +517,7 @@ function loginPage({ tok, error = null, email = '' }) {
       <p><button class="btn" type="submit">Sign in</button></p>
     </form>
     <p class="note">Just subscribed? Go back to the page Stripe returned you to after paying — your setup link is there. Forgotten your password? Email <a href="mailto:${SUPPORT}">${SUPPORT}</a> and we will reset it.</p>
-  </div></section>`, '', { noindex: true });
+  </div></section>`, '', { noindex: true, canonical: '/login' });
 }
 
 // ---------------------------------------------------------------- app
@@ -525,7 +529,8 @@ function picker() {
       <td>${esc(s.type)}</td><td>${esc(s.phase)}</td>
       <td><a class="btn sm" href="/app/${esc(s.slug)}">Open</a></td></tr>`).join('')}
     </tbody></table>
-    <p class="note" style="margin-top:24px">Already a customer? <a href="/login">Sign in</a>. Not yet? <a href="/#pricing">Start a free 30 day trial</a>.</p></div></section>`);
+    <p class="note" style="margin-top:24px">Already a customer? <a href="/login">Sign in</a>. Not yet? <a href="/#pricing">Start a free 30 day trial</a>.</p></div></section>`,
+    '', { canonical: '/app' });
 }
 
 /** Status banner for a signed-in account, shown on every page in the app. */
@@ -588,6 +593,7 @@ const FLASH = {
  * replaced by the recorded date.
  */
 function dashboard(s, flash, ctx = {}) {
+  ctx = { ...ctx, canonical: `/app/${s.slug}` };
   const report = evaluate(s, loadState(s.slug), new Date());
   const bad = report.counts.failingMust > 0;
   const readOnly = !!ctx.readOnly;
@@ -655,6 +661,19 @@ const server = http.createServer(async (req, res) => {
   const parts = url.pathname.split('/').filter(Boolean);
   try {
     if (req.method === 'GET' && url.pathname === '/') return send(res, 200, landing(q.subscribed ? 'Thanks — we will send your free check shortly.' : null));
+    if (req.method === 'GET' && url.pathname === '/robots.txt') {
+      return send(res, 200, `User-agent: *\nAllow: /\nSitemap: ${BASE_URL}/sitemap.xml\n`, 'text/plain; charset=utf-8');
+    }
+    if (req.method === 'GET' && url.pathname === '/sitemap.xml') {
+      // Only real, working, indexable URLs: the marketing pages, legal pages, the demo
+      // picker, and the two public demo school dashboards. Not /login (noindex), not
+      // /app/new or /app/:slug/settings (require sign-in), not /#pricing (an in-page
+      // anchor on /, not its own route).
+      const urls = ['/', '/terms', '/privacy', '/app', ...SEED.map(s => `/app/${s.slug}`)];
+      const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${
+        urls.map(u => `  <url><loc>${BASE_URL}${u}</loc></url>`).join('\n')}\n</urlset>\n`;
+      return send(res, 200, body, 'application/xml; charset=utf-8');
+    }
     if (req.method === 'GET' && url.pathname === '/health') {
       return json(res, 200, { ok: true,
         storage: { persistent: DB_PERSISTENT, location: DB_LOCATION,
@@ -663,8 +682,8 @@ const server = http.createServer(async (req, res) => {
           ephemeral: !DB_PERSISTENT || /^\/tmp(\/|$)/.test(DB_LOCATION) || DB_LOCATION === ':memory:' },
         demo_schools: SEED.length, requirements: REQUIREMENTS.length });
     }
-    if (req.method === 'GET' && url.pathname === '/terms') return send(res, 200, shell('Policy Clock — terms of service', TERMS));
-    if (req.method === 'GET' && url.pathname === '/privacy') return send(res, 200, shell('Policy Clock — privacy notice', PRIVACY));
+    if (req.method === 'GET' && url.pathname === '/terms') return send(res, 200, shell('Policy Clock — terms of service', TERMS, '', { canonical: '/terms' }));
+    if (req.method === 'GET' && url.pathname === '/privacy') return send(res, 200, shell('Policy Clock — privacy notice', PRIVACY, '', { canonical: '/privacy' }));
 
     // ── sign in / out ──────────────────────────────────────────────────────
     if (url.pathname === '/login') {
