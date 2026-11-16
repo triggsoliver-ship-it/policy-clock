@@ -343,6 +343,28 @@ footer{padding:56px 0;font-size:.95rem}
 }
 @media(max-width:640px){section{padding:72px 0}.hero{padding:76px 0 70px}.hero::before{width:560px;height:560px;margin-top:-280px;right:-330px;opacity:.6}}
 
+/* ---- Requirement guides (.gd): dark hero, facts strip, ruled body ---- */
+.gd-hero{background:var(--night);color:#eef4f1;padding:clamp(48px,8vw,104px) 0 clamp(40px,6vw,72px);position:relative;overflow:hidden;isolation:isolate}
+.gd-hero::before{content:"";position:absolute;z-index:-1;right:-14%;top:-55%;width:min(760px,90vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(closest-side,rgba(31,180,128,.34),transparent 70%)}
+.gd-hero .wrap,.gd-body .wrap{display:block;max-width:900px}
+.gd-hero .crumb{font-size:.9rem;color:#8fa79d;margin:0 0 20px}.gd-hero .crumb a{color:#8fa79d}
+.gd-hero h1{font-size:clamp(2.2rem,6.2vw,4.4rem);line-height:1.02;letter-spacing:-.025em;font-weight:800;color:#fff;margin:0 0 20px;text-wrap:balance}
+.gd-hero .lede{font-size:clamp(1.1rem,2vw,1.32rem);color:#a9bbb3;max-width:36em;margin:0}
+.gd-pill{display:inline-block;font-weight:700;font-size:.85rem;padding:5px 12px;border-radius:99px;margin:0 0 18px;background:#3fd7a0;color:#062117}
+.gd-pill.should{background:#f2c94c;color:#2a2204}
+.gd-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:clamp(32px,5vw,56px) 0 0;border-top:1px solid rgba(255,255,255,.18)}
+.gd-facts div{padding:18px 20px 0 0}.gd-facts b{display:block;font-size:.82rem;color:#8fa79d;font-weight:600;margin-bottom:4px}.gd-facts span{font-size:1.08rem;color:#fff;font-weight:600}
+.gd-body{padding:clamp(36px,6vw,72px) 0}
+.gd-body h2{font-size:clamp(1.5rem,3.4vw,2.2rem);letter-spacing:-.015em;margin:clamp(36px,5vw,56px) 0 12px;padding-top:clamp(22px,3vw,32px);border-top:1px solid var(--line)}
+.gd-body h2:first-child{margin-top:0;padding-top:0;border-top:0}
+.gd-body p,.gd-body li{font-size:1.08rem;max-width:40em}
+.gd-src{background:var(--bg-2);border-left:4px solid var(--accent);padding:18px 22px;border-radius:0 10px 10px 0}.gd-src p{margin:.3em 0}
+.gd-list{list-style:none;padding:0;margin:0}.gd-list li{border-top:1px solid var(--line);padding:13px 0;display:flex;justify-content:space-between;gap:16px;max-width:none}
+.gd-list li:last-child{border-bottom:1px solid var(--line)}.gd-list a{font-weight:600;text-decoration:none;color:var(--ink)}.gd-list a:hover{color:var(--accent)}
+.gd-list small{color:var(--ink-2);white-space:nowrap}
+.gd-cta{background:var(--night);color:#eef4f1;border-radius:18px;padding:clamp(28px,5vw,52px);margin-top:clamp(40px,6vw,64px)}
+.gd-cta h2{color:#fff;border:0;padding:0;margin:0 0 10px}.gd-cta p{color:#a9bbb3}.gd-cta a:not(.btn){color:#3fd7a0}
+@media(max-width:640px){.gd-facts{grid-template-columns:1fr}.gd-facts div{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12)}}
 /* ---- Front page only (.lp): the register in the hero, ruled steps, dark closing panel ---- */
 .hero.lp>.wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:64px;align-items:center}
 .hero.lp h1{font-size:clamp(2.5rem,4.7vw,4.3rem)}
@@ -402,7 +424,7 @@ footer{padding:56px 0;font-size:.95rem}
  */
 const shell = (title, body, desc = '', ctx = {}) => `<!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">${ctx.canonical ? `<link rel="canonical" href="${BASE_URL}${ctx.canonical}">` : ''}${ctx.noindex ? '<meta name="robots" content="noindex">' : ''}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><style>${CSS}</style></head>
+<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">${ctx.canonical ? `<link rel="canonical" href="${BASE_URL}${ctx.canonical}">` : ''}<meta property="og:type" content="website"><meta property="og:site_name" content="Policy Clock"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc || 'Track every statutory publishing deadline for English schools, with the legal source cited next to each one.')}"><meta property="og:image" content="${BASE_URL}/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="en_GB"><meta name="twitter:card" content="summary_large_image">${ctx.canonical ? `<meta property="og:url" content="${BASE_URL}${ctx.canonical}">` : ''}${ctx.ld ? `<script type="application/ld+json">${JSON.stringify(ctx.ld).replace(/</g, '\\u003c')}</script>` : ''}${ctx.noindex ? '<meta name="robots" content="noindex">' : ''}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><style>${CSS}</style></head>
 <body><a href="#main" class="skip">Skip to main content</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="/">Policy<span>Clock</span></a>
@@ -461,36 +483,54 @@ function reqSource(r) {
   const name = doc ? (doc[1] ? `<a href="${doc[1]}" rel="noopener">${esc(doc[0])}</a>` : esc(doc[0])) : esc(m[1]);
   return `<p><strong>${name}</strong></p><p>${esc(m[2])}</p>`;
 }
-const GUIDE_H1 = 'font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.06;letter-spacing:-.02em;margin:0 0 16px';
+const OG_IMAGE = (() => { try { return fs.readFileSync(path.join(__dirname, 'og.jpg')); } catch { return null; } })();
+const reqWhenShort = r => {
+  if (r.cadence === 'fixed-date' && typeof r.deadline === 'function') return r.deadline(new Date()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' }) + ', every year';
+  if (r.cadence === 'on-change') return 'Whenever it changes';
+  return r.periodMonths ? (r.periodMonths === 12 ? 'Review every 12 months' : `Review every ${r.periodMonths / 12} years`) : 'Keep current';
+};
+const gdCta = `<div class="gd-cta"><h2>Never miss it</h2>
+<p>Policy Clock tracks this and every other item a school has to publish, shows what is due next and keeps the source next to each one.</p>
+<p><a class="btn" href="/#pricing">Start free trial</a> &nbsp; <a href="/app">See the live demo</a></p></div>`;
 function requirementPage(r) {
   const verb = reqVerb(r);
-  const related = REQUIREMENTS.filter(x => x.group === r.group && x.id !== r.id).slice(0, 5);
-  const body = `<section style="padding:56px 0"><div class="wrap" style="max-width:780px">
-<p class="note"><a href="/requirements">What schools publish online</a> / ${esc(r.group)}</p>
-<h1 style="${GUIDE_H1}">${esc(r.title)}: what a school website ${verb} publish</h1>
-<p style="font-size:1.15rem">${esc(reqWho(r))} ${verb} publish this on the school website.${verb === 'should' ? ' The source says "should", so it is recommended practice, not a legal requirement.' : ''}</p>
-<h2 style="margin-top:38px">What it has to cover</h2><p>${esc(r.detail)}</p>
-<h2 style="margin-top:38px">When it is due</h2><p>${esc(reqWhen(r))}</p>
-<h2 style="margin-top:38px">Where this comes from</h2>${reqSource(r)}
-<p class="note">This page summarises the source. It is not legal advice. Check the source itself, or your governance professional, before relying on it.</p>
-<h2 style="margin-top:38px">Never miss it</h2>
-<p>Policy Clock tracks this and every other item a school has to publish, shows what is due next and keeps the source next to each one.</p>
-<p><a class="btn" href="/#pricing">Start free trial</a> &nbsp; <a href="/app">See the live demo</a></p>
-${related.length ? `<h2 style="margin-top:38px">Also in ${esc(r.group)}</h2><ul>${related.map(x => `<li><a href="/requirements/${reqSlug(x)}">${esc(x.title)}</a></li>`).join('')}</ul>` : ''}
+  const related = REQUIREMENTS.filter(x => x.group === r.group && x.id !== r.id).slice(0, 6);
+  const body = `<section class="gd-hero"><div class="wrap">
+<p class="crumb"><a href="/requirements">What schools publish online</a> / ${esc(r.group)}</p>
+<span class="gd-pill ${verb}">${verb === 'must' ? 'Must publish' : 'Should publish'}</span>
+<h1>${esc(r.title)}: what a school website ${verb} publish</h1>
+<p class="lede">${esc(reqWho(r))} ${verb} publish this on the school website.${verb === 'should' ? ' The source says "should", so it is recommended practice, not a legal requirement.' : ''}</p>
+<div class="gd-facts"><div><b>Who</b><span>${esc(reqWho(r).replace(' in England', ''))}</span></div><div><b>When</b><span>${esc(reqWhenShort(r))}</span></div><div><b>Status</b><span>${verb === 'must' ? 'Required' : 'Recommended'}</span></div></div>
+</div></section>
+<section class="gd-body"><div class="wrap">
+<h2>What it has to cover</h2><p>${esc(r.detail)}</p>
+<h2>When it is due</h2><p>${esc(reqWhen(r))}</p>
+<h2>Where this comes from</h2><div class="gd-src">${reqSource(r)}</div>
+<p class="note" style="margin-top:14px">This page summarises the source. It is not legal advice. Check the source itself, or your governance professional, before relying on it.</p>
+${related.length ? `<h2>Also in ${esc(r.group)}</h2><ul class="gd-list">${related.map(x => `<li><a href="/requirements/${reqSlug(x)}">${esc(x.title)}</a><small>${reqVerb(x)}</small></li>`).join('')}</ul>` : ''}
+${gdCta}
 </div></section>`;
+  const canonical = `/requirements/${reqSlug(r)}`;
   return shell(`${r.title}: what schools ${verb} publish | Policy Clock`, body,
     `${r.title}: what ${reqWho(r).toLowerCase()} ${verb} publish on the school website, when it is due and the source it comes from.`.slice(0, 200),
-    { canonical: `/requirements/${reqSlug(r)}` });
+    { canonical, ld: { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Policy Clock', item: BASE_URL + '/' },
+      { '@type': 'ListItem', position: 2, name: 'What schools publish online', item: BASE_URL + '/requirements' },
+      { '@type': 'ListItem', position: 3, name: r.title, item: BASE_URL + canonical }] } });
 }
 function requirementsIndex() {
   const groups = [...new Set(REQUIREMENTS.map(r => r.group))];
-  const body = `<section style="padding:56px 0"><div class="wrap" style="max-width:780px">
-<h1 style="${GUIDE_H1}">What a school website must publish</h1>
-<p style="font-size:1.15rem">${REQUIREMENTS.length} items English state-funded schools publish online, each traced to current DfE guidance or legislation. DfE withdrew its own single list on 7 March 2024, so this is re-derived from the live sources.</p>
-${groups.map(g => `<h2 style="margin-top:34px">${esc(g)}</h2><ul>${REQUIREMENTS.filter(r => r.group === g).map(r =>
-    `<li><a href="/requirements/${reqSlug(r)}">${esc(r.title)}</a> <span class="note">(${reqVerb(r)})</span></li>`).join('')}</ul>`).join('')}
-<p class="note" style="margin-top:30px">A summary of the sources, not legal advice.</p>
-<p><a class="btn" href="/#pricing">Start free trial</a> &nbsp; <a href="/app">See the live demo</a></p>
+  const musts = REQUIREMENTS.filter(r => r.force === 'must').length;
+  const body = `<section class="gd-hero"><div class="wrap">
+<h1>What a school website must publish</h1>
+<p class="lede">${REQUIREMENTS.length} items English state-funded schools publish online, each traced to current DfE guidance or legislation. DfE withdrew its own single list on 7 March 2024, so this one is re-derived from the live sources.</p>
+<div class="gd-facts"><div><b>Required</b><span>${musts} items</span></div><div><b>Recommended</b><span>${REQUIREMENTS.length - musts} items</span></div><div><b>Fixed annual dates</b><span>${REQUIREMENTS.filter(r => r.cadence === 'fixed-date').length} items</span></div></div>
+</div></section>
+<section class="gd-body"><div class="wrap">
+${groups.map(g => `<h2>${esc(g)}</h2><ul class="gd-list">${REQUIREMENTS.filter(r => r.group === g).map(r =>
+    `<li><a href="/requirements/${reqSlug(r)}">${esc(r.title)}</a><small>${esc(reqWhenShort(r))} · ${reqVerb(r)}</small></li>`).join('')}</ul>`).join('')}
+<p class="note" style="margin-top:22px">A summary of the sources, not legal advice.</p>
+${gdCta}
 </div></section>`;
   return shell('What a school website must publish: the full list | Policy Clock', body,
     `The ${REQUIREMENTS.length} items English schools publish on their websites, with the deadline and legal source for each one.`, { canonical: '/requirements' });
@@ -890,6 +930,10 @@ const server = http.createServer(async (req, res) => {
           // and every customer account with it. This flag is here so that is visible.
           ephemeral: !DB_PERSISTENT || /^\/tmp(\/|$)/.test(DB_LOCATION) || DB_LOCATION === ':memory:' },
         demo_schools: SEED.length, requirements: REQUIREMENTS.length });
+    }
+    if (req.method === 'GET' && url.pathname === '/og.jpg' && OG_IMAGE) {
+      res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Content-Length': OG_IMAGE.length, 'Cache-Control': 'public, max-age=86400' });
+      return res.end(OG_IMAGE);
     }
     if (req.method === 'GET' && url.pathname === '/requirements') return send(res, 200, requirementsIndex());
     if (req.method === 'GET' && url.pathname.startsWith('/requirements/')) {
