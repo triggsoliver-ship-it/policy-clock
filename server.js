@@ -342,6 +342,55 @@ footer{padding:56px 0;font-size:.95rem}
   section:not(.hero) h2,.card,.tier{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 55%}
 }
 @media(max-width:640px){section{padding:72px 0}.hero{padding:76px 0 70px}.hero::before{width:560px;height:560px;margin-top:-280px;right:-330px;opacity:.6}}
+
+/* ---- Front page only (.lp): the register in the hero, ruled steps, dark closing panel ---- */
+.hero.lp>.wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:64px;align-items:center}
+.hero.lp h1{font-size:clamp(2.5rem,4.7vw,4.3rem)}
+.hero.lp::before{right:-420px;opacity:.55}
+.reg{background:rgba(10,26,20,.72);border:1px solid rgba(95,227,176,.28);border-radius:26px;padding:28px 28px 22px;backdrop-filter:blur(14px);box-shadow:0 60px 120px -50px #000;transform:perspective(1400px) rotateY(-7deg) rotateX(2deg);transform-origin:left center;transition:transform .9s var(--e)}
+.reg:hover{transform:perspective(1400px) rotateY(-1deg)}
+.reg-h{display:flex;justify-content:space-between;gap:12px;font:500 .8rem/1.3 var(--mono);color:#8fa79d;margin:0 0 6px}
+.reg ol{list-style:none;margin:0;padding:0}
+.reg li{display:grid;grid-template-columns:6.3rem minmax(0,1fr);column-gap:20px;align-items:start;padding:18px 0;border-top:1px solid rgba(255,255,255,.1)}
+.reg li>b{font:800 3.3rem/.9 'Figtree',sans-serif;letter-spacing:-.05em;color:#fff;font-variant-numeric:tabular-nums;text-align:right}
+.reg li.soon>b{color:var(--mint);text-shadow:0 0 30px rgba(95,227,176,.55)}
+.reg strong{display:block;font-size:1.12rem;font-weight:700;line-height:1.25;color:#fff}
+.reg span{display:block;font-size:.95rem;color:#a9bbb3;margin-top:3px}
+.reg i{font-style:normal;font-weight:700;font-size:.74rem;color:var(--night);background:var(--mint);padding:2px 9px;border-radius:99px;margin-left:8px;white-space:nowrap}
+.reg q{display:block;font:400 .76rem/1.5 var(--mono);color:#7f968c;margin-top:8px;quotes:'“' '”'}
+.reg-f{font-size:.84rem;color:#7f968c;margin:14px 0 0}
+.lp.how{background:var(--night);color:#eef4f1;border-bottom:0;padding-top:40px}
+.lp.how h2{color:#fff;max-width:14em}
+.lp.how .lede{color:#a9bbb3}
+.lp.how .note{color:#8fa79d;max-width:52em}
+.gone{margin:0 0 54px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;border-top:1px solid rgba(255,255,255,.14);padding-top:54px}
+.gone s{font:800 clamp(4.2rem,15vw,13.5rem)/.82 'Figtree',sans-serif;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:1.5px rgba(95,227,176,.75);text-decoration:line-through;text-decoration-color:var(--mint);text-decoration-thickness:.045em;font-variant-numeric:tabular-nums}
+.gone span{font:500 .9rem/1.4 var(--mono);color:#8fa79d;max-width:16em}
+.lp.how .grid3{display:block;border-top:1px solid rgba(255,255,255,.16);margin-top:64px}
+.lp.how .card{display:grid;grid-template-columns:7.5rem minmax(0,5fr) minmax(0,6fr);column-gap:40px;align-items:baseline;padding:40px 0;border-bottom:1px solid rgba(255,255,255,.16)}
+.lp.how .num{font-size:clamp(3.6rem,6vw,5.6rem);color:var(--mint);margin:0}
+.lp.how .card h3{font-size:clamp(1.6rem,2.6vw,2.3rem);color:#fff;margin:0;line-height:1.08;letter-spacing:-.035em}
+.lp.how .card p{font-size:1.14rem;color:#b9c9c2;line-height:1.6}
+.lp.pricing{background:var(--bg-2)}
+.lp.pricing .tier{background:#fff}
+.lp.pricing .tier .amt{font-size:clamp(3.8rem,5.4vw,5rem)}
+.lp.wait{border-bottom:0;padding:28px 0}
+.lp.wait>.wrap{max-width:none;margin:0 28px;padding:96px 6vw;border-radius:36px;background:var(--night);color:#eef4f1;position:relative;overflow:hidden;isolation:isolate}
+.lp.wait>.wrap::before{content:'';position:absolute;z-index:-1;right:-200px;top:-200px;width:760px;height:760px;border-radius:50%;background:radial-gradient(closest-side,rgba(15,110,79,.6),transparent)}
+.lp.wait h2{color:#fff;font-size:clamp(2.4rem,6vw,5rem)}
+.lp.wait .lede{color:#a9bbb3}
+.lp.wait .note{color:#8fa79d}
+.lp.wait input,.lp.wait select{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);color:#fff}
+.lp.wait input::placeholder{color:#8fa79d}
+.lp.wait select option{color:#101c17}
+.lp.wait .btn{background:var(--mint);border-color:var(--mint);color:var(--night)}
+.lp.wait form.capture{max-width:760px}
+@media(max-width:980px){.hero.lp>.wrap{grid-template-columns:1fr;gap:48px}.reg,.reg:hover{transform:none}.lp.how .card{grid-template-columns:5rem minmax(0,1fr);row-gap:10px}.lp.how .card p{grid-column:2}}
+@media(max-width:640px){.reg{padding:22px 20px 18px;border-radius:20px}.reg li{grid-template-columns:4.9rem minmax(0,1fr);column-gap:14px}.reg li>b{font-size:2.6rem}.lp.wait>.wrap{margin:0 12px;padding:60px 24px;border-radius:26px}.gone{padding-top:36px;margin-bottom:36px}.lp.how .card{grid-template-columns:3.6rem minmax(0,1fr);column-gap:18px}}
+@supports (animation-timeline:view()){
+  .gone s{animation:strike linear both;animation-timeline:view();animation-range:entry 20% cover 45%}
+  @keyframes strike{from{text-decoration-color:transparent;-webkit-text-stroke-color:rgba(255,255,255,.9)}to{text-decoration-color:var(--mint)}}
+}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 `;
 
@@ -379,16 +428,39 @@ function landing(msg) {
     <form method="POST" action="/checkout"><input type="hidden" name="tier" value="${t.id}">
     <button class="btn${t.featured ? '' : ' ghost'}" type="submit">Start free 30 day trial</button></form></div>`).join('');
 
+  // The four fixed calendar dates, counted from today, for the panel in the hero. Titles and
+  // quoted wording come straight from the register so the page can never disagree with the app.
+  const today = new Date();
+  const t0 = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const fixed = [['pupil_premium_statement', 12, 31, '31 December'], ['admission_appeals_timetable', 2, 28, '28 February'],
+    ['admission_arrangements', 3, 15, '15 March'], ['pe_sport_premium', 7, 31, '31 July']].map(([id, m, d, label]) => {
+    const r = REQUIREMENTS.find(x => x.id === id);
+    let due = Date.UTC(today.getUTCFullYear(), m - 1, d);
+    if (due < t0) due = Date.UTC(today.getUTCFullYear() + 1, m - 1, d);
+    const quote = r ? (r.source.match(/"([^"]+)"/) || [])[1] : null;
+    return r ? { title: r.title, label, days: Math.round((due - t0) / 864e5), quote } : null;
+  }).filter(Boolean).sort((x, y) => x.days - y.days);
+  const reg = fixed.map(f => `<li class="${f.days <= 45 ? 'soon' : ''}"><b>${f.days}</b><div><strong>${esc(f.title)}</strong>
+    <span>${f.days === 0 ? 'Due today' : `${f.days === 1 ? 'day' : 'days'} to ${f.label}`}${f.days <= 45 ? ' <i>Due soon</i>' : ''}</span>
+    ${f.quote ? `<q>${esc(f.quote)}</q>` : ''}</div></li>`).join('');
+
   return shell('Policy Clock — never miss a statutory publishing deadline',
     `${msg ? `<div class="wrap"><div class="banner ok" role="status">${esc(msg)}</div></div>` : ''}
-<section class="hero"><div class="wrap">
+<section class="hero lp"><div class="wrap"><div class="hero-l">
   <p class="eyebrow">For school business managers, clerks and governors</p>
   <h1>Your pupil premium statement<br>was due on 31 December.</h1>
   <p class="lede">English schools carry more than twenty separate statutory publishing duties, each on its own clock — 31 December, 15 March, 31 July, 28 February, every three years, every four years. There is no longer a single government list of them. Policy Clock keeps the register, counts the days, and shows the source next to every deadline.</p>
   <p><a class="btn" href="/app">See it on a real school profile</a> &nbsp; <a class="btn ghost" href="#how">How it works</a></p>
+  </div>
+  <div class="reg" aria-label="The four fixed publishing dates, counted from today">
+    <p class="reg-h"><span>Fixed dates, counted from today</span><time>${today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}</time></p>
+    <ol>${reg}</ol>
+    <p class="reg-f">Four of the twenty-odd duties. The wording in quotes is DfE's own.</p>
+  </div>
 </div></section>
 
-<section id="how"><div class="wrap">
+<section id="how" class="lp how"><div class="wrap">
+  <p class="gone" aria-hidden="true"><s>07.03.24</s><span>The day the government list was withdrawn</span></p>
   <h2>The list you used to work from no longer exists</h2>
   <p class="lede">DfE withdrew "Statutory policies for schools and academy trusts" on 7 March 2024. Nothing replaced it. The duties did not go away — they were simply scattered back across the School Information Regulations, the Equality Act, the Children and Families Act and a dozen guidance pages that update on their own schedules.</p>
   <div class="grid3">
@@ -402,7 +474,7 @@ function landing(msg) {
   <p class="note" style="margin-top:30px">"Must" and "should" are scored separately. Your compliance figure covers only what the law actually requires — DfE recommendations are tracked, but never inflate the number.</p>
 </div></section>
 
-<section id="pricing"><div class="wrap">
+<section id="pricing" class="lp pricing"><div class="wrap">
   <h2>Pricing</h2>
   <p class="lede">Less than an hour of a business manager's time each month.</p>
   <div class="price-grid">${tiers}</div>
@@ -410,7 +482,7 @@ function landing(msg) {
   <p class="note">Setup is self-service and takes about two minutes: subscribe, name your school, choose a password, and your dashboard opens. Nothing is charged until the 30 day trial ends.</p>
 </div></section>
 
-<section id="waitlist"><div class="wrap">
+<section id="waitlist" class="lp wait"><div class="wrap">
   <h2>Get early access</h2>
   <p class="lede">Tell us your school and we will send back a free check of what your website currently publishes against the statutory list.</p>
   <form class="capture" method="POST" action="/subscribe">
