@@ -283,6 +283,66 @@ th{font:600 .75rem/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;c
 pre{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:20px;overflow:auto;font-size:.84rem;line-height:1.6}
 code{font-family:var(--mono);font-size:.9em}
 @media(max-width:640px){.nav{display:none}section{padding:58px 0}.hero{padding:62px 0}}
+
+/* ---- November 2026 look: bigger type, a dark hero with a turning dial, more room ---- */
+:root{--e:cubic-bezier(.16,1,.3,1);--night:#08130f;--mint:#5fe3b0;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+body{font:17px/1.65 'Figtree',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+::selection{background:var(--accent);color:#fff}
+.wrap{max-width:1180px}
+h1,h2,h3{letter-spacing:-.035em}
+h1{font-size:clamp(2.7rem,6.6vw,5.6rem);font-weight:800;line-height:.98}
+h2{font-size:clamp(1.9rem,4.4vw,3.5rem);font-weight:800;line-height:1.02;margin-bottom:1rem}
+h3{font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+.lede{font-size:clamp(1.15rem,1.7vw,1.35rem);line-height:1.55}
+header.site{padding:18px 0;background:rgba(255,255,255,.86);backdrop-filter:saturate(170%) blur(14px)}
+.brand{font-weight:800;font-size:1.3rem;letter-spacing:-.035em}
+.nav{gap:28px;font-size:1rem}
+.btn{padding:15px 26px;border-radius:999px;font-weight:700;font-size:1rem;transition:transform .35s var(--e),box-shadow .3s,filter .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 16px 36px -16px rgba(15,110,79,.7)}
+.btn.ghost{border-color:#c9d3ce}
+.btn.sm{padding:8px 15px;font-size:.88rem;border-radius:999px}
+section{padding:112px 0}
+.eyebrow{font:600 1rem/1.3 'Figtree',sans-serif;letter-spacing:0;text-transform:none;margin-bottom:24px}
+.hero{position:relative;isolation:isolate;overflow:hidden;padding:130px 0 120px;background:var(--night);color:#eef4f1;border-bottom:0}
+.hero::before{content:'';position:absolute;z-index:-1;right:-260px;top:50%;width:900px;height:900px;margin-top:-450px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(95,227,176,.55) 0 .5deg,transparent .5deg 6deg);-webkit-mask-image:radial-gradient(closest-side,transparent 86%,#000 86.5% 97%,transparent 97.5%);mask-image:radial-gradient(closest-side,transparent 86%,#000 86.5% 97%,transparent 97.5%);animation:dial 120s linear infinite}
+.hero::after{content:'';position:absolute;z-index:-2;right:-340px;top:50%;width:1100px;height:1100px;margin-top:-550px;border-radius:50%;background:radial-gradient(closest-side,rgba(15,110,79,.5),transparent)}
+@keyframes dial{to{transform:rotate(360deg)}}
+.hero h1{color:#fff;max-width:13em}
+.hero .lede{color:#a9bbb3;margin-top:28px}
+.hero .eyebrow{color:var(--mint)}
+.hero .btn{background:var(--mint);border-color:var(--mint);color:var(--night)}
+.hero .btn:hover{box-shadow:0 16px 44px -14px rgba(95,227,176,.8)}
+.hero .btn.ghost{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.28)}
+.hero a:not(.btn){color:var(--mint)}
+.hero .wrap>*{animation:rise 1s var(--e) both}
+.hero .wrap>:nth-child(2){animation-delay:.08s}.hero .wrap>:nth-child(3){animation-delay:.16s}.hero .wrap>:nth-child(4){animation-delay:.24s}.hero .wrap>:nth-child(5){animation-delay:.32s}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.grid3{gap:0 40px;margin-top:56px;border-top:1px solid #c9d3ce}
+.card{border:0;border-radius:0;padding:34px 0 10px}
+.card p{font-size:1.02rem}
+.card h3{font-size:1.5rem;margin-bottom:10px}
+.num{font:800 3.2rem/1 'Figtree',sans-serif;letter-spacing:-.05em;margin-bottom:26px}
+.price-grid{gap:16px;margin-top:52px}
+.tier{border-radius:22px;padding:38px 32px;transition:transform .5s var(--e),box-shadow .4s}
+.tier:hover{transform:translateY(-4px);box-shadow:0 30px 60px -36px rgba(16,28,23,.5)}
+.tier.featured{box-shadow:0 0 0 3px var(--accent-soft),0 34px 70px -40px rgba(15,110,79,.7)}
+.tier .amt{font-size:3.8rem;font-weight:800;letter-spacing:-.05em;line-height:1}
+.tier ul{font-size:1rem;margin:24px 0 30px}
+.tier li{padding:10px 0 10px 24px;border-top:1px solid var(--line)}
+.tier li::before{top:21px}
+input,select{padding:14px 16px;border-radius:10px;border-color:#c9d3ce}
+form.capture{max-width:640px;margin-top:30px}
+.scorebox{border-radius:18px;padding:32px}
+.scorebox .big{font-size:4rem;font-weight:800;letter-spacing:-.05em}
+th{font:600 .78rem/1 var(--mono)}
+footer{padding:56px 0;font-size:.95rem}
+.nav a.btn,.nav a.btn:hover{color:#fff}
+.tier .per{margin-left:8px;font-size:.95rem}
+@supports (animation-timeline:view()){
+  section:not(.hero) h2,.card,.tier{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 55%}
+}
+@media(max-width:640px){section{padding:72px 0}.hero{padding:76px 0 70px}.hero::before{width:560px;height:560px;margin-top:-280px;right:-330px;opacity:.6}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 `;
 
 /**
@@ -293,7 +353,7 @@ code{font-family:var(--mono);font-size:.9em}
  */
 const shell = (title, body, desc = '', ctx = {}) => `<!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">${ctx.canonical ? `<link rel="canonical" href="${BASE_URL}${ctx.canonical}">` : ''}${ctx.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style></head>
+<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">${ctx.canonical ? `<link rel="canonical" href="${BASE_URL}${ctx.canonical}">` : ''}${ctx.noindex ? '<meta name="robots" content="noindex">' : ''}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><style>${CSS}</style></head>
 <body><a href="#main" class="skip">Skip to main content</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="/">Policy<span>Clock</span></a>
