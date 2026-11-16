@@ -487,7 +487,7 @@ const OG_IMAGE = (() => { try { return fs.readFileSync(path.join(__dirname, 'og.
 const reqWhenShort = r => {
   if (r.cadence === 'fixed-date' && typeof r.deadline === 'function') return r.deadline(new Date()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' }) + ', every year';
   if (r.cadence === 'on-change') return 'Whenever it changes';
-  return r.periodMonths ? (r.periodMonths === 12 ? 'Review every 12 months' : `Review every ${r.periodMonths / 12} years`) : 'Keep current';
+  return r.periodMonths ? (r.periodMonths === 12 ? 'Checked every 12 months' : `Checked every ${r.periodMonths / 12} years`) : 'Keep current';
 };
 const gdCta = `<div class="gd-cta"><h2>Never miss it</h2>
 <p>Policy Clock tracks this and every other item a school has to publish, shows what is due next and keeps the source next to each one.</p>
@@ -500,7 +500,7 @@ function requirementPage(r) {
 <span class="gd-pill ${verb}">${verb === 'must' ? 'Must publish' : 'Should publish'}</span>
 <h1>${esc(r.title)}: what a school website ${verb} publish</h1>
 <p class="lede">${esc(reqWho(r))} ${verb} publish this on the school website.${verb === 'should' ? ' The source says "should", so it is recommended practice, not a legal requirement.' : ''}</p>
-<div class="gd-facts"><div><b>Who</b><span>${esc(reqWho(r).replace(' in England', ''))}</span></div><div><b>When</b><span>${esc(reqWhenShort(r))}</span></div><div><b>Status</b><span>${verb === 'must' ? 'Required' : 'Recommended'}</span></div></div>
+<div class="gd-facts"><div><b>Who</b><span>${esc(reqWho(r).replace(' in England', ''))}</span></div><div><b>${r.cadence === 'fixed-date' ? 'Due' : r.cadence === 'on-change' ? 'Update' : 'Policy Clock review cycle'}</b><span>${esc(reqWhenShort(r))}</span></div><div><b>Status</b><span>${verb === 'must' ? 'Required' : 'Recommended'}</span></div></div>
 </div></section>
 <section class="gd-body"><div class="wrap">
 <h2>What it has to cover</h2><p>${esc(r.detail)}</p>
