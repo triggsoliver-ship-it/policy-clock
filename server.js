@@ -42,7 +42,7 @@ const SUPPORT = 'oli@parishinabox.co.uk';
 // Canonical origin for <link rel="canonical">, robots.txt and sitemap.xml. The site is
 // only ever served from this Render domain, so it is safe to hard-code rather than derive
 // from the request Host header (which a crawler or bot can spoof).
-const BASE_URL = 'https://policy-clock.onrender.com';
+const BASE_URL = 'https://policyclock.uk';
 
 // ---------------------------------------------------------------- schools
 // Two kinds. The demo schools come from data/schools.json and are public: they are the
