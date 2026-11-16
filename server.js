@@ -413,11 +413,88 @@ const shell = (title, body, desc = '', ctx = {}) => `<!doctype html>
 <main id="main">${body}</main>
 <footer><div class="wrap"><p><strong>Policy Clock</strong> — statutory publishing deadlines for English schools, with the source next to every one.</p>
 <p class="note">A compliance tracking tool, not legal advice. Requirements are re-derived from current DfE guidance and legislation; DfE's own consolidated policy list was withdrawn on 7 March 2024.</p>
-<p class="note"><a href="/terms">Terms of service</a> · <a href="/privacy">Privacy notice</a> · Contact: ${SUPPORT}</p>
+<p class="note"><a href="/requirements">What schools must publish</a> · <a href="/terms">Terms of service</a> · <a href="/privacy">Privacy notice</a> · Contact: ${SUPPORT}</p>
 <p class="note">Policy Clock is a trading name of Keelson Holdings Ltd, registered in England and Wales, company number 17359226. Registered office: 71-75 Shelton Street, Covent Garden, London WC2H 9JQ.</p></div></footer></body></html>`;
 
 const simplePage = (title, heading, html, ctx) => shell(`Policy Clock — ${title}`,
   `<section style="padding:52px 0"><div class="wrap" style="max-width:760px"><h2>${esc(heading)}</h2>${html}</div></section>`, '', ctx);
+
+// ---------------------------------------------------------------- requirement guides
+// One public page per item in the statutory register, plus an index. Everything on these
+// pages comes straight from lib/requirements.js, so the wording ("must" or "should") and
+// the source quoted are the register's own. Added 16 Nov 2026 so schools searching for a
+// single duty can find it.
+const SOURCE_DOCS = {
+  'PUB-M': ['What maintained schools must or should publish online (DfE)', 'https://www.gov.uk/guidance/what-maintained-schools-must-publish-online'],
+  'PUB-A': ['What academies and further education colleges must or should publish online (DfE)', 'https://www.gov.uk/guidance/what-academies-free-schools-and-colleges-should-publish-online'],
+  'SIR2008': ['School Information (England) Regulations 2008, as amended', 'https://www.legislation.gov.uk/uksi/2008/3093/contents/made'],
+  'EA2010': ['Equality Act 2010 and the Specific Duties Regulations 2017', null],
+  'CFA2014': ['Children and Families Act 2014, section 69, and the SEND Regulations 2014, Schedule 1', null],
+  'EA2002': ['Education Act 2002, section 29', null],
+  'EIA2006': ['Education and Inspections Act 2006, section 89', null],
+  'EA1997': ['Education Act 1997, section 42B', null],
+  'GPG2017': ['Equality Act 2010 (Gender Pay Gap Information) Regulations 2017', null],
+};
+const reqSlug = r => r.id.replace(/_/g, '-');
+const reqVerb = r => (r.force === 'must' ? 'must' : 'should');
+const reqWho = r => {
+  const t = (r.appliesTo && r.appliesTo.types) || [];
+  if (t.includes('maintained') && t.includes('academy')) return 'Maintained schools and academies in England';
+  return t.includes('academy') ? 'Academies in England' : 'Maintained schools in England';
+};
+function reqWhen(r) {
+  if (r.cadence === 'fixed-date' && typeof r.deadline === 'function') {
+    const d = r.deadline(new Date());
+    return `A fixed date every year: ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' })}.`;
+  }
+  if (r.cadence === 'on-change') return 'It should reflect the current facts, so it changes whenever they change.';
+  if (r.periodMonths) {
+    const yrs = r.periodMonths / 12;
+    return `There is no single calendar date. Policy Clock treats it as due for review once it is ${yrs === 1 ? '12 months' : yrs + ' years'} old.`;
+  }
+  return 'It should reflect the current facts.';
+}
+function reqSource(r) {
+  const m = r.source.match(/^\[([^\]]+)\]\s*(.*)$/);
+  if (!m) return `<p>${esc(r.source)}</p>`;
+  const doc = SOURCE_DOCS[m[1]];
+  const name = doc ? (doc[1] ? `<a href="${doc[1]}" rel="noopener">${esc(doc[0])}</a>` : esc(doc[0])) : esc(m[1]);
+  return `<p><strong>${name}</strong></p><p>${esc(m[2])}</p>`;
+}
+const GUIDE_H1 = 'font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.06;letter-spacing:-.02em;margin:0 0 16px';
+function requirementPage(r) {
+  const verb = reqVerb(r);
+  const related = REQUIREMENTS.filter(x => x.group === r.group && x.id !== r.id).slice(0, 5);
+  const body = `<section style="padding:56px 0"><div class="wrap" style="max-width:780px">
+<p class="note"><a href="/requirements">What schools publish online</a> / ${esc(r.group)}</p>
+<h1 style="${GUIDE_H1}">${esc(r.title)}: what a school website ${verb} publish</h1>
+<p style="font-size:1.15rem">${esc(reqWho(r))} ${verb} publish this on the school website.${verb === 'should' ? ' The source says "should", so it is recommended practice, not a legal requirement.' : ''}</p>
+<h2 style="margin-top:38px">What it has to cover</h2><p>${esc(r.detail)}</p>
+<h2 style="margin-top:38px">When it is due</h2><p>${esc(reqWhen(r))}</p>
+<h2 style="margin-top:38px">Where this comes from</h2>${reqSource(r)}
+<p class="note">This page summarises the source. It is not legal advice. Check the source itself, or your governance professional, before relying on it.</p>
+<h2 style="margin-top:38px">Never miss it</h2>
+<p>Policy Clock tracks this and every other item a school has to publish, shows what is due next and keeps the source next to each one.</p>
+<p><a class="btn" href="/#pricing">Start free trial</a> &nbsp; <a href="/app">See the live demo</a></p>
+${related.length ? `<h2 style="margin-top:38px">Also in ${esc(r.group)}</h2><ul>${related.map(x => `<li><a href="/requirements/${reqSlug(x)}">${esc(x.title)}</a></li>`).join('')}</ul>` : ''}
+</div></section>`;
+  return shell(`${r.title}: what schools ${verb} publish | Policy Clock`, body,
+    `${r.title}: what ${reqWho(r).toLowerCase()} ${verb} publish on the school website, when it is due and the source it comes from.`.slice(0, 200),
+    { canonical: `/requirements/${reqSlug(r)}` });
+}
+function requirementsIndex() {
+  const groups = [...new Set(REQUIREMENTS.map(r => r.group))];
+  const body = `<section style="padding:56px 0"><div class="wrap" style="max-width:780px">
+<h1 style="${GUIDE_H1}">What a school website must publish</h1>
+<p style="font-size:1.15rem">${REQUIREMENTS.length} items English state-funded schools publish online, each traced to current DfE guidance or legislation. DfE withdrew its own single list on 7 March 2024, so this is re-derived from the live sources.</p>
+${groups.map(g => `<h2 style="margin-top:34px">${esc(g)}</h2><ul>${REQUIREMENTS.filter(r => r.group === g).map(r =>
+    `<li><a href="/requirements/${reqSlug(r)}">${esc(r.title)}</a> <span class="note">(${reqVerb(r)})</span></li>`).join('')}</ul>`).join('')}
+<p class="note" style="margin-top:30px">A summary of the sources, not legal advice.</p>
+<p><a class="btn" href="/#pricing">Start free trial</a> &nbsp; <a href="/app">See the live demo</a></p>
+</div></section>`;
+  return shell('What a school website must publish: the full list | Policy Clock', body,
+    `The ${REQUIREMENTS.length} items English schools publish on their websites, with the deadline and legal source for each one.`, { canonical: '/requirements' });
+}
 
 // ---------------------------------------------------------------- landing
 function landing(msg) {
@@ -801,7 +878,7 @@ const server = http.createServer(async (req, res) => {
       // picker, and the two public demo school dashboards. Not /login (noindex), not
       // /app/new or /app/:slug/settings (require sign-in), not /#pricing (an in-page
       // anchor on /, not its own route).
-      const urls = ['/', '/terms', '/privacy', '/app', ...SEED.map(s => `/app/${s.slug}`)];
+      const urls = ['/', '/requirements', ...REQUIREMENTS.map(r => `/requirements/${reqSlug(r)}`), '/terms', '/privacy', '/app', ...SEED.map(s => `/app/${s.slug}`)];
       const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${
         urls.map(u => `  <url><loc>${BASE_URL}${u}</loc></url>`).join('\n')}\n</urlset>\n`;
       return send(res, 200, body, 'application/xml; charset=utf-8');
@@ -813,6 +890,11 @@ const server = http.createServer(async (req, res) => {
           // and every customer account with it. This flag is here so that is visible.
           ephemeral: !DB_PERSISTENT || /^\/tmp(\/|$)/.test(DB_LOCATION) || DB_LOCATION === ':memory:' },
         demo_schools: SEED.length, requirements: REQUIREMENTS.length });
+    }
+    if (req.method === 'GET' && url.pathname === '/requirements') return send(res, 200, requirementsIndex());
+    if (req.method === 'GET' && url.pathname.startsWith('/requirements/')) {
+      const r = REQUIREMENTS.find(x => reqSlug(x) === url.pathname.slice('/requirements/'.length));
+      if (r) return send(res, 200, requirementPage(r));
     }
     if (req.method === 'GET' && url.pathname === '/terms') return send(res, 200, shell('Policy Clock — terms of service', TERMS, '', { canonical: '/terms' }));
     if (req.method === 'GET' && url.pathname === '/privacy') return send(res, 200, shell('Policy Clock — privacy notice', PRIVACY, '', { canonical: '/privacy' }));
